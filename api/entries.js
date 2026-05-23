@@ -1,3 +1,13 @@
+// 暫時診斷用 — 確認環境變數
+if (req.query.debug === 'env') {
+  return res.json({
+    hasSupabaseUrl: !!process.env.SUPABASE_URL,
+    hasSupabaseKey: !!process.env.SUPABASE_SERVICE_KEY,
+    hasAnthropicKey: !!process.env.ANTHROPIC_API_KEY,
+    // 只顯示前 10 個字，確認是否有值
+    supabaseUrlPrefix: (process.env.SUPABASE_URL || '').substring(0, 15),
+  })
+}
 const { createClient } = require('@supabase/supabase-js')
 
 const supabase = createClient(
