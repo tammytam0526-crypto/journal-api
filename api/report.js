@@ -1,12 +1,12 @@
-import Anthropic from '@anthropic-ai/sdk'
-import { createClient } from '@supabase/supabase-js'
+const Anthropic = require('@anthropic-ai/sdk')
+const { createClient } = require('@supabase/supabase-js')
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_KEY
 )
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
@@ -29,7 +29,7 @@ export default async function handler(req, res) {
     max_tokens: 2000,
     messages: [{
       role: 'user',
-      content: `你陪伴我走完了 30 天的自我訪談計畫。以下是我們所有的對話紀錄：\n\n${historyText}\n\n請根據這 30 天的所有內容，為我寫一份自我畫像報告。\n\n要求：\n- 用第二人稱（你）寫，語氣溫柔如我們一路的對話\n- 不要列清單，不要分析框架，用流動的文字\n- 分成三到四個自然段落，每段聚焦在一個你觀察到的主題\n- 輕輕指出我在這 30 天裡可能沒有說破的東西\n- 結尾留一個問題，作為走向第 31 天的禮物\n- 長度：600-900 字`
+      content: `你陪伴我走完了 30 天的自我訪談計畫。以下是所有對話紀錄：\n\n${historyText}\n\n請根據這 30 天的所有內容，為我寫一份自我畫像報告。要求：用第二人稱（你）、流動的文字、三到四個自然段落、輕輕指出我沒有說破的東西、結尾留一個問題，600-900字。`
     }]
   })
 
