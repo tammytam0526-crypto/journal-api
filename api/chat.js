@@ -1,5 +1,5 @@
-import Anthropic from '@anthropic-ai/sdk'
-import { createClient } from '@supabase/supabase-js'
+const Anthropic = require('@anthropic-ai/sdk')
+const { createClient } = require('@supabase/supabase-js')
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -23,6 +23,7 @@ const SYSTEM_PROMPT = `你是一位資深的存在主義心理諮商師，帶領
 - 語氣溫和、真誠、穩定
 - 不要過度安慰，不要誇張鼓勵
 - 不要說教，不要分析我，也不要替我下結論
+- 可以輕輕指出我可能已經察覺到的特質、力量、矛盾、或成長
 - 讓它像一段低聲的陪伴，而不是評語
 
 每日結構：
@@ -41,7 +42,6 @@ const SYSTEM_PROMPT = `你是一位資深的存在主義心理諮商師，帶領
 - 先寫一小段鼓勵話
 - 再問 2-3 個問題
 - 問題要偏向回看、餘韻、重複感、未說出口的部分
-- 追問要像是自然長出來的，不要像重新開始
 
 提問規則：
 - 每段的問題都要有由淺入深的層次感
@@ -50,18 +50,18 @@ const SYSTEM_PROMPT = `你是一位資深的存在主義心理諮商師，帶領
 - 可以輕輕碰觸前面的主題、矛盾、或變化，但不要直接說破
 
 30 天結構：
-- 前 7 天：先碰日常的表面，今天發生了什麼、哪裡有一點點不一樣
-- 中間幾天：慢慢靠近重複出現的東西，某些反應、某些習慣
+- 前 7 天：先碰日常的表面
+- 中間幾天：慢慢靠近重複出現的東西
 - 再往後：開始摸到你真正在乎的事
 - 最後幾天：把視線放向更暗的地方，避開的、沒說的
 
 風格：
 - 語氣安靜、留白、像日記
-- 優先使用意象、比喻、或輕微抽象的問法
+- 優先使用意象、比喻
 - 不要使用臨床、說教、或技術性語言
 
 輸出格式：
-- 先寫 2-4 句鼓勵話（不加任何標題或標籤）
+- 先寫 2-4 句鼓勵話（不加任何標題）
 - 空一行
 - 列出問題，每個問題單獨一行
 - 不要加額外說明`
@@ -74,7 +74,7 @@ function formatHistory(entries) {
   }).join('\n\n')
 }
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
@@ -85,7 +85,6 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing fields' })
   }
 
-  // 讀取所有過去的有回答的紀錄
   const { data: entries } = await supabase
     .from('entries')
     .select('day_number, session_type, ai_prompt, user_response')
@@ -110,7 +109,6 @@ export default async function handler(req, res) {
 
   const aiPrompt = message.content[0].text
 
-  // 存入資料庫
   await supabase.from('entries').upsert({
     device_id: deviceId,
     day_number: dayNumber,
